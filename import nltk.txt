@@ -1,0 +1,13 @@
+import nltk
+def clean_punctuation(text):
+    return text.translate(str.maketrans('', '', string.punctuation))
+
+lemmatizer = Lemmatizer()
+
+def lemmatize_text(text):
+    return lemmatizer.lemmatize(text)
+
+def remove_numbers(text):
+    return re.sub('[0-9]+', '', text)
+nltk.download('punkt_tab')
+data['full_text'] = data['full_text'].apply(remove_stopwords)

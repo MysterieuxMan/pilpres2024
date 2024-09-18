@@ -1,0 +1,14 @@
+2024-09-07T19:45:46,948 Using pip 23.2.1 from c:\Users\asus.LAPTOP-P9TBK6TS.000\anaconda3\Lib\site-packages\pip (python 3.11)
+2024-09-07T19:45:46,952 Non-user install because site-packages writeable
+2024-09-07T19:45:47,869 Created temporary directory: C:\Users\asus.LAPTOP-P9TBK6TS.000\AppData\Local\Temp\pip-build-tracker-hlzk6qzv
+2024-09-07T19:45:47,869 Initialized build tracking at C:\Users\asus.LAPTOP-P9TBK6TS.000\AppData\Local\Temp\pip-build-tracker-hlzk6qzv
+2024-09-07T19:45:47,870 Created build tracker: C:\Users\asus.LAPTOP-P9TBK6TS.000\AppData\Local\Temp\pip-build-tracker-hlzk6qzv
+2024-09-07T19:45:47,870 Entered build tracker: C:\Users\asus.LAPTOP-P9TBK6TS.000\AppData\Local\Temp\pip-build-tracker-hlzk6qzv
+2024-09-07T19:45:47,871 Created temporary directory: C:\Users\asus.LAPTOP-P9TBK6TS.000\AppData\Local\Temp\pip-install-gif_rkt4
+2024-09-07T19:45:47,875 Created temporary directory: C:\Users\asus.LAPTOP-P9TBK6TS.000\AppData\Local\Temp\pip-ephem-wheel-cache-g0g7gnpu
+2024-09-07T19:45:48,227 Requirement already satisfied: pillow in c:\users\asus.laptop-p9tbk6ts.000\anaconda3\lib\site-packages (10.4.0)
+2024-09-07T19:45:48,251 Created temporary directory: C:\Users\asus.LAPTOP-P9TBK6TS.000\AppData\Local\Temp\pip-unpack-0i08wq4h
+2024-09-07T19:45:53,483 Remote version of pip: 24.2
+2024-09-07T19:45:53,484 Local version of pip:  23.2.1
+2024-09-07T19:45:53,665 Was pip installed by pip? False
+2024-09-07T19:45:53,666 Removed build tracker: 'C:\\Users\\asus.LAPTOP-P9TBK6TS.000\\AppData\\Local\\Temp\\pip-build-tracker-hlzk6qzv'
