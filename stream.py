@@ -1,17 +1,19 @@
 import joblib
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics import accuracy_score, classification_report
 import streamlit as st
 import pandas as pd
-import numpy as np
 import random
+import tweepy
+import re
+from sklearn.svm import LinearSVC
 from imblearn.over_sampling import SMOTE
+
+bearer_token = "AAAAAAAAAAAAAAAAAAAAAAthwAEAAAAAOYyLVEa1W5j%2FxoJKgerIXEasq1k%3D2MCSvMpAjgdqpNGg7dVAkOv7R41rBqznrCcwF9Q7WOZHgvYMtb"
 
 @st.cache_data
 def load_data():
     data = pd.read_csv('experiment.csv')
-
     data['full_text'] = data['full_text'].astype(str)
     return data
 
@@ -26,21 +28,79 @@ def preprocess_and_train(data):
     smote = SMOTE(random_state=42)
     X_train_resampled, y_train_resampled = smote.fit_resample(X_train_Tfidf, y_train)
 
-    model = joblib.load('SVM_exs.joblib')
+    model = joblib.load('svc.joblib')
+
+    if isinstance(model, LinearSVC):
+        model.set_params(dual=False)
 
     model.fit(X_train_resampled, y_train_resampled)
 
     return model, Tfidf_vect, X_test_Tfidf, y_test
 
+def read_text_file(file):
+    try:
+        return file.getvalue().decode('utf-8')
+    except Exception as e:
+        st.error(f"Error reading file: {str(e)}")
+        return None
+
+def analyze_text(text, model, Tfidf_vect):
+    input_vector = Tfidf_vect.transform([text])
+    prediction = model.predict(input_vector)
+    return prediction[0]
+
+def extract_tweet_id(url):
+    patterns = [
+        r'twitter\.com/\w+/status/(\d+)',
+        r'x\.com/\w+/status/(\d+)'
+    ]
+    for pattern in patterns:
+        match = re.search(pattern, url)
+        if match:
+            return match.group(1)
+    return None
+
+def get_tweet_content(url):
+    client = tweepy.Client(bearer_token=bearer_token)
+    tweet_id = extract_tweet_id(url)
+    
+    if not tweet_id:
+        return None
+    try:
+        tweet = client.get_tweet(tweet_id, tweet_fields=["created_at", "public_metrics"], expansions=["author_id"], user_fields=["username", "name"])
+        if tweet and tweet.data:
+            return tweet.data["text"]
+        else:
+            return None
+    except tweepy.TweepyException as e:
+        st.error(f"Error retrieving tweet: {str(e)}")
+        return None
+
+def analyze_text(text, model, Tfidf_vect):
+    input_vector = Tfidf_vect.transform([text])
+    prediction = model.predict(input_vector)
+    return prediction[0]
+
 def main():
-    st.title("Sentiment Analysis Pemilu Presiden")
+    st.title("Sentimen Analisis")
 
     data = load_data()
-
     model, Tfidf_vect, X_test_Tfidf, y_test = preprocess_and_train(data)
 
-    train_accuracy = model.score(Tfidf_vect.transform(data['full_text']), data['indoBert Classification'])
-    test_accuracy = model.score(X_test_Tfidf, y_test)
+    st.header("Upload File")
+    uploaded_file = st.file_uploader("Choose a text file", type=['txt'])
+    
+    if uploaded_file is not None:
+        text_content = read_text_file(uploaded_file)
+        if text_content:
+            st.text_area("File Content:", value=text_content, height=200, disabled=True)
+            
+            if st.button("Analyze File Content"):
+                sentiment = analyze_text(text_content, model, Tfidf_vect)
+                st.write(f"Predicted Sentiment for File Content: {sentiment}")
+
+    st.markdown("---")
+    st.header("Manual Text Input")
 
     daftar_kalimat = [
         "Pemilu kali ini memberikan harapan besar bagi masa depan bangsa yang lebih baik.",
@@ -68,7 +128,7 @@ def main():
         "Saya tidak percaya bahwa pemilu akan membawa perubahan yang berarti.",
         "Korupsi masih merajalela meski pergantian pemimpin terus terjadi.",
         "Janji-janji politik hanya manis di awal tetapi pahit dalam realisasinya.",
-         "Saya merasa suara rakyat tidak dihargai dalam pemilu kali ini.",
+        "Saya merasa suara rakyat tidak dihargai dalam pemilu kali ini.",
         "Pemilu hanya menguntungkan segelintir elit politik saja.",
         "Kecurangan dalam pemilu sudah menjadi rahasia umum yang dibiarkan.",
         "Kandidat yang ada tidak ada yang benar-benar mewakili kepentingan rakyat kecil.",
@@ -88,49 +148,27 @@ def main():
         st.session_state.tes = kalimat
         st.rerun()
 
-    user_input = st.text_area("Enter text for sentiment analysis:",
+
+    user_input = st.text_area("Enter text or tweet link for sentiment analysis:",
                             value=st.session_state.tes,
                             placeholder="Contoh text akan muncul di sini")
   
-    if st.button("Analyze Sentiment"):
+    if st.button("Analyze Text"):
         if user_input:
-            input_vector = Tfidf_vect.transform([user_input])
-            
-            prediction = model.predict(input_vector)
-            
-            proba = model._predict_proba_lr(input_vector)[0]
-            # confidence = np.max(proba)
-
-            # proba = model.predict_proba(input_vector)[0]
-            confidence = np.max(proba)
-            
-            st.write(f"Predicted Sentiment: {prediction[0]}")
-            st.write(f"Confidence: {confidence:.2f}")
+            if re.match(r'^(https?://)?(www\.)?(twitter|x)\.com/', user_input):
+                tweet_content = get_tweet_content(user_input)
+                if tweet_content:
+                    st.write(f"**Tweet Content:**")
+                    st.write(tweet_content)
+                    prediction = analyze_text(tweet_content, model, Tfidf_vect)
+                    st.write(f"**Predicted Sentiment:** {prediction}")
+                else:
+                    st.write("Could not retrieve tweet content. Please check the URL.")
+            else:
+                prediction = analyze_text(user_input, model, Tfidf_vect)
+                st.write(f"**Predicted Sentiment:** {prediction}")
         else:
-            st.write("Please enter some text to analyze.")
-
-    # if st.button("Show Detailed Classification Report"):
-    #     input_vector = Tfidf_vect.transform([user_input])
-            
-    #     prediction = model.predict(input_vector)
-            
-    #     proba = model.predict_proba(input_vector)[0]
-    #     confidence = np.max(proba)
-            
-    #     st.write(f"Predicted Sentiment: {prediction[0]}")
-    #     st.write(f"Confidence: {confidence:.2f}")
-
-    
-    # if st.button("Accuracy Model"):     
-    #     st.write(f"Model Training Accuracy: {train_accuracy:.2f}")
-    #     st.write(f"Model Testing Accuracy: {test_accuracy:.2f}")
-
-    #     y_pred = model.predict(X_test_Tfidf)
-    #     report = classification_report(y_test, y_pred)
-    #     st.text("Classification Report:")
-    #     st.text(report)
-
-        
+            st.write("Please enter some text or a tweet link to analyze.")
 
 if __name__ == "__main__":
     main()
