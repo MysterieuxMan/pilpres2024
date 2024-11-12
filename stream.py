@@ -159,8 +159,8 @@ def main():
             if re.match(r'^(https?://)?(www\.)?(twitter|x)\.com/', user_input):
                 tweet_content = get_tweet_content(user_input)
                 if tweet_content:
-                    st.write(f"**Tweet Content:** {tweet_content}")
-                    st.write({tweet_content})
+                    st.write(f"**Tweet Content:**")
+                    st.write(tweet_content)
                     prediction = analyze_text(tweet_content, model, Tfidf_vect)
                     st.write(f"**Predicted Sentiment:** {prediction}")
                 else:
