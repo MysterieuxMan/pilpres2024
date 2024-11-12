@@ -9,10 +9,6 @@ import re
 from sklearn.svm import LinearSVC
 from imblearn.over_sampling import SMOTE
 
-<<<<<<< HEAD
-# Bearer token untuk API Twitter
-=======
->>>>>>> 8ff2f1b7883b712f60014a1ef377255eda789f02
 bearer_token = "AAAAAAAAAAAAAAAAAAAAAAthwAEAAAAAOYyLVEa1W5j%2FxoJKgerIXEasq1k%3D2MCSvMpAjgdqpNGg7dVAkOv7R41rBqznrCcwF9Q7WOZHgvYMtb"
 
 @st.cache_data
